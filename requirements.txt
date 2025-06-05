@@ -10,3 +10,4 @@ google-cloud-translate
 google-cloud-texttospeech
 gunicorn
 git+https://github.com/openai/whisper.git
+firebase-admin
