@@ -1,9 +1,11 @@
 flask
-gunicorn
+flask-cors
+python-dotenv
+werkzeug
+torch
 ffmpeg-python
 google-cloud-storage
 google-cloud-translate
 google-cloud-texttospeech
-python-dotenv
-flask-cors
+gunicorn
 git+https://github.com/openai/whisper.git
