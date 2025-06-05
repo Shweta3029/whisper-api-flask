@@ -1,3 +1,5 @@
 flask
-flask-cors
-luminoth
+gunicorn
+ffmpeg-python
+google-cloud-storage
+...
