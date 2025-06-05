@@ -2,3 +2,6 @@ flask
 gunicorn
 ffmpeg-python
 google-cloud-storage
+google-cloud-translate
+google-cloud-texttospeech
+python-dotenv
