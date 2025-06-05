@@ -1,5 +1,3 @@
-# app.py
-
 from flask import Flask, request, jsonify
 import os
 import whisper
@@ -7,6 +5,7 @@ import tempfile
 from pytube import YouTube
 import subprocess
 import uuid
+from google.cloud import storage  # Firebase Storage SDK
 
 app = Flask(__name__)
 model = whisper.load_model("base")  # or 'small', 'medium', etc. depending on server size
@@ -15,6 +14,11 @@ UPLOAD_FOLDER = 'uploads'
 PROCESSED_FOLDER = 'processed'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(PROCESSED_FOLDER, exist_ok=True)
+
+# Initialize Firebase Storage client
+storage_client = storage.Client()
+bucket_name = "aigle-dr7eb.firebasestorage.app"  # Your Firebase Storage bucket name
+bucket = storage_client.bucket(bucket_name)
 
 # Utility: Download YouTube video
 def download_youtube_video(link):
@@ -57,9 +61,15 @@ def add_subtitles(video_path, transcript, output_path):
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return output_path
 
+# Upload to Firebase Storage and make public
+def upload_file_to_firebase(local_file_path, destination_blob_name):
+    blob = bucket.blob(destination_blob_name)
+    blob.upload_from_filename(local_file_path)
+    blob.make_public()
+    return blob.public_url
+
 @app.route("/generate-shorts", methods=["POST"])
 def generate_shorts():
-    video_file = None
     yt_link = request.form.get("youtube_link")
     with_subs = request.form.get("subtitles") == 'true'
 
@@ -74,26 +84,31 @@ def generate_shorts():
         else:
             return jsonify({"error": "No video file or YouTube link provided"}), 400
 
-        # Transcribe it
+        # Transcribe video
         result = transcribe_with_whisper(video_path)
 
-        # Take first 60 seconds segment for short (or logic can be extended)
+        # Cut first 60 seconds short
         start = 0
         end = 60
         short_path = os.path.join(PROCESSED_FOLDER, f"short_{uuid.uuid4()}.mp4")
         cut_video(video_path, start, end, short_path)
 
-        # Add subtitles if asked
+        # Add subtitles if requested
         if with_subs:
             final_output = os.path.join(PROCESSED_FOLDER, f"subtitled_{uuid.uuid4()}.mp4")
             add_subtitles(short_path, result, final_output)
         else:
             final_output = short_path
 
-        return jsonify({"message": "Short created", "file_path": final_output})
+        # Upload final video to Firebase Storage
+        file_name_in_bucket = f"shorts/{os.path.basename(final_output)}"
+        public_url = upload_file_to_firebase(final_output, file_name_in_bucket)
+
+        return jsonify({"message": "Short created", "file_url": public_url})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
