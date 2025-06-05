@@ -6,6 +6,21 @@ from pytube import YouTube
 import subprocess
 import uuid
 from google.cloud import storage  # Firebase Storage SDK
+import firebase_admin
+from firebase_admin import credentials, storage
+import json
+import os
+
+# Read credentials from environment variable
+firebase_creds = json.loads(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
+
+# Initialize Firebase with credentials loaded from env
+cred = credentials.Certificate(firebase_creds)
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'aigle-dr7eb.appspot.com'
+})
+
+bucket = storage.bucket()
 
 app = Flask(__name__)
 model = whisper.load_model("base")  # or 'small', 'medium', etc. depending on server size
