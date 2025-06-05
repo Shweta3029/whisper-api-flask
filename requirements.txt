@@ -6,4 +6,4 @@ google-cloud-translate
 google-cloud-texttospeech
 python-dotenv
 flask-cors
-whisper
+git+https://github.com/openai/whisper.git
