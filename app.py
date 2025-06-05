@@ -24,6 +24,28 @@ def handler():
     if not request.files:
         # If the user didn't submit any files, return a 400 (Bad Request) error.
         abort(400)
+        from flask import request, jsonify
+
+@app.route('/generate-short', methods=['POST'])
+def generate_short():
+    video_file = request.files.get('video')
+    duration = int(request.form.get('duration', 30))  # default 30 seconds
+
+    input_path = 'input.mp4'
+    output_path = 'output_short.mp4'
+
+    if video_file is None:
+        return jsonify({"error": "No video file uploaded"}), 400
+
+    video_file.save(input_path)
+
+    try:
+        trim_video(input_path, output_path, duration)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"message": "Video trimmed", "output_file": output_path})
+
 
     # For each file, let's store the results in a list of dictionaries.
     results = []
@@ -46,3 +68,15 @@ def handler():
 
     # This will be automatically converted to JSON.
     return {'results': results}
+    import subprocess
+
+def trim_video(input_path, output_path, duration):
+    command = [
+        "ffmpeg",
+        "-ss", "0",
+        "-i", input_path,
+        "-t", str(duration),
+        "-c", "copy",
+        output_path
+    ]
+    subprocess.run(command, check=True)
