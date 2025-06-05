@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import whisper
-import ffmpeg
+import subprocess
 import os
-from google.cloud import storage, translate_v2 as translate, texttospeech
+import tempfile
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,6 +12,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Load Whisper model once when starting the app
 model = whisper.load_model("base")
 
 def trim_video(input_path, output_path, duration):
@@ -61,7 +63,8 @@ def generate_short():
         return jsonify({"error": f"FFmpeg error: {str(e)}"}), 500
 
     # Return the trimmed video file to download
-    return send_file(output_path, as_attachment=True, attachment_filename=f"short_{filename}")
+    return send_file(output_path, as_attachment=True, download_name=f"short_{filename}")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Use Render's assigned port or default 5000 locally
+    app.run(host="0.0.0.0", port=port, debug=True)
