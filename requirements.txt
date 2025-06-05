@@ -4,6 +4,7 @@ python-dotenv
 werkzeug
 torch
 ffmpeg-python
+pytube
 google-cloud-storage
 google-cloud-translate
 google-cloud-texttospeech
