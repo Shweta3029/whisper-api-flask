@@ -1,12 +1,12 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-import subprocess
-import os
-import tempfile
-
-from werkzeug.utils import secure_filename
-
 import whisper
+import ffmpeg
+import os
+from google.cloud import storage, translate_v2 as translate, texttospeech
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
