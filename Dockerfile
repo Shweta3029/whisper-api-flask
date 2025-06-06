@@ -11,6 +11,6 @@ RUN pip install --no-cache-dir git+https://github.com/openai/whisper.git
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 8080  # ✅ Must match Cloud Run's expected port
 
-CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8080"]
+CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8080"]  # ✅ Matches EXPOSE and Cloud Run settings
