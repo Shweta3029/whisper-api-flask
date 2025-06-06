@@ -22,6 +22,10 @@ bucket = storage.bucket()  # ✅ This is your Firebase Storage bucket
 app = Flask(__name__)
 model = whisper.load_model("base")  # You can change to 'small' or 'medium' if needed
 
+@app.route("/", methods=["GET"])
+def home():
+    return "🚀 Smart Shorts Generator is running!"
+
 UPLOAD_FOLDER = 'uploads'
 PROCESSED_FOLDER = 'processed'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
